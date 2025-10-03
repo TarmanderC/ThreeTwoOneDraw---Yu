@@ -6,6 +6,12 @@ using System;
 public class DisableOverworld : MonoBehaviour
 {
 
+    [SerializeField]
+    public string Combat = "CombatDemo";
+    public string Overworld = "OverworldWildWest";
+    public GameObject player;
+
+
     public static DisableOverworld Instance { get; private set; }
     public void Awake()
     {
@@ -23,19 +29,48 @@ public class DisableOverworld : MonoBehaviour
     private List<GameObject> allObjects = new List<GameObject>();
     public void enableOverworld(bool state)
     {
-        Debug.Log(EncounterControl.Instance.playerWonLast);
+
+        if (EncounterControl.Instance != null)
+        {
+            Debug.Log("Player won last: " + EncounterControl.Instance.playerWonLast);
+        }
+        else
+        {
+            Debug.Log("EncounterControl.Instance is null!");
+        }
+
+        MusicManager.audioSource.Stop();
+        player.GetComponent<SpriteMovement>().isFrozen = !state;
         foreach (GameObject singleObject in allObjects)
         {
             singleObject.SetActive(state);
         }
+
         if (state)
         {
-            SceneManager.SetActiveScene(SceneManager.GetSceneByName("OverworldWildWest"));
+            Scene overworldScene = SceneManager.GetSceneByName(Overworld);
+            if (!overworldScene.isLoaded) //Checks if scene is not loaded
+            {
+                SceneManager.LoadScene(Overworld, LoadSceneMode.Additive);
+            }
+            else if (overworldScene.IsValid())  //Checks if scene exists
+            {
+                SceneManager.SetActiveScene(overworldScene);
+            }
         }
         else
         {
-            SceneManager.SetActiveScene(SceneManager.GetSceneByName("CombatDemo"));
+
+            Scene combatScene = SceneManager.GetSceneByName(Combat);
+            if (!combatScene.isLoaded) //Checks if scene is not loaded
+            {
+                // Load the scene additively (keeps current scene loaded)
+                SceneManager.LoadScene(Combat, LoadSceneMode.Additive);
+            }
+            else if (combatScene.IsValid()) //Checks if scene exists
+            {
+                SceneManager.SetActiveScene(combatScene);
+            }
         }
     }
-
 }
